@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Getting Started</title>
+  </head>
+  <body>
+
+   <div id="three"></div>
+    <!-- 禁止縮放 -->  
+    <script>
+      document.addEventListener(
+        "touchmove",
+        function (event) {
+          if (event.scale !== 1) {
+            event.preventDefault();
+          }
+        },
+        { passive: false }
+      );
+    </script>
+
+    <!-- 143版本 124版本 -->
+    <script  type="importmap">
+      {
+        "imports": {
+          "three": "./build/three.module.js"
+        }
+      }
+    </script>
+
+    <script type="module" >
+      import * as THREE from "./build/three.module.js";
+      import { OrbitControls } from "./js/controls/OrbitControls.js";
+      let camera, scene, renderer;
+      let raycaster;
+      const mouse = new THREE.Vector2();
+
+      let rollOverMesh, rollOverMaterial;
+			let cubeGeo, cubeMaterial;
+      const distance=50;
+
+      main();
+      render();
+
+      //主函数
+      function main(){
+        //添加一个div元素
+        const container = document.getElementById("three");
+
+        camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 10000 );
+				camera.position.set( 500, 1000, 300 );
+				camera.lookAt( 0, 0, 0 );
+
+        scene = new THREE.Scene();//创建一个新场景
+				scene.background = new THREE.Color( 0xf0f0f0 );
+        
+        // lights
+        const ambientLight = new THREE.AmbientLight( 0x606060 );
+        scene.add( ambientLight );
+
+				const directionalLight = new THREE.DirectionalLight( 0xffffff );
+				directionalLight.position.set( 1, 0.75, 0.5 ).normalize();
+				scene.add( directionalLight );
+
+        renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+        container.appendChild(renderer.domElement);
+
+        raycaster = new THREE.Raycaster();//3d世界鼠標選中物體獲取器
+        pointer = new THREE.Vector2();//二维向量
+
+        renderer.domElement.addEventListener('click', onClick, false);
+        renderer.domElement.addEventListener( 'pointermove', onPointerMove );
+
+        // 當視窗大小改變時
+        window.addEventListener('resize', onWindowResize);
+
+        // 轨迹控制器
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.target.set(0, 0, 0);
+        controls.update();
+
+        // grid
+				const gridHelper = new THREE.GridHelper( 1000, 25 );
+				scene.add( gridHelper );
+
+        cube();
+        moveEvent();
+    }
+    
+      // 方塊或者模型
+      function cube(){
+          const rollOverGeo = new THREE.BoxGeometry( 24, 24, 24 );
+          rollOverMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, opacity: 0.5, transparent: true } );
+          rollOverMesh = new THREE.Mesh( rollOverGeo, rollOverMaterial );
+          rollOverMesh.position.set(-480,0,0)
+          rollOverMesh.name='cube'
+          scene.add( rollOverMesh );
+      }
+
+      // 鼠標經過事件
+      function onPointerMove(event) {
+          pointer.set( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1 );
+          raycaster.setFromCamera( pointer, camera );
+          const intersects = raycaster.intersectObjects( scene.children, false );
+          if ( intersects.length > 0 ) {
+              const intersect = intersects[0];
+              render();
+          }
+      }
+        
+      // 改變視窗大小需要重新調整 camera 和 renderer
+      function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            render();
+      }
+
+        // 點擊事件
+    function onClick( event ) {
+        event.preventDefault();
+        mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+        mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+        // 获取鼠标点击的3D模型
+        raycaster.setFromCamera( mouse, camera );
+        var intersects = raycaster.intersectObjects( scene.children, true );
+        if ( intersects.length > 0 ) {
+             // 點擊到3D內容
+            const object = intersects[0].object;
+            console.log(object,object.name,object.type)
+            if(object.name="cube"&&x>0){
+              moveClick();
+            }
+        }
+    }
+
+    function render() {
+       renderer.render( scene, camera );
+    }
+
+    // 自動移動事件
+    let x=-480
+    function moveEvent(){
+      window.timer1=setInterval(()=>{
+        x=x+distance
+        rollOverMesh.position.set(x,0,0)
+        console.log(x)
+        render();
+        if(x>0){
+          clearInterval(window.timer1)
+        }
+      },300)
+    }
+    // 點擊移動事件
+    function moveClick(){
+      window.timer2=setInterval(()=>{
+        x=x-distance
+        rollOverMesh.position.set(x,0,0)
+        console.log(x)
+        render();
+        if(x<-450){
+          x=-480
+          clearInterval(window.timer2)
+        }
+      },300)
+    }
+    </script>
+  </body>
+</html>

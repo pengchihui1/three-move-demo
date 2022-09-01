@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Getting Started</title>
+  </head>
+  <body>
+
+   <div id="three"></div>
+    <!-- 禁止縮放 -->  
+    <script>
+      document.addEventListener(
+        "touchmove",
+        function (event) {
+          if (event.scale !== 1) {
+            event.preventDefault();
+          }
+        },
+        { passive: false }
+      );
+    </script>
+
+    <!-- 143版本 124版本 -->
+    <script  type="importmap">
+      {
+        "imports": {
+          "three": "./build/three.module.js"
+        }
+      }
+    </script>
+
+    <script type="module" >
+      import * as THREE from "./build/three.module.js";
+      // import Stats from './js/stats.module.js';
+      import { OrbitControls } from "./js/controls/OrbitControls.js";
+      let camera, scene, renderer;
+
+      let rollOverMesh, rollOverMaterial;
+			let cubeGeo, cubeMaterial;
+
+
+
+      main();
+      render();
+
+      //主函数
+      function main(){
+        //添加一个div元素
+        const container = document.getElementById("three");
+
+        camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 10000 );
+				camera.position.set( 1300, 1500, 0 );
+				camera.lookAt( 0, 0, 0 );
+
+        scene = new THREE.Scene();//创建一个新场景
+				scene.background = new THREE.Color( 0xf0f0f0 );
+
+        
+        renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+        container.appendChild(renderer.domElement);
+
+        raycaster = new THREE.Raycaster();//3d世界鼠標選中物體獲取器
+        pointer = new THREE.Vector2();//二维向量
+
+        //给场景添加光源(会影响兔兔颜色)
+        var light= new THREE.PointLight(0xffffff);
+        light.position.set(0,50000,0);
+        scene.add(light);  
+
+        // 自然光(会影响兔兔颜色)
+        var ambientLight = new THREE.AmbientLight( 0x666666 );
+        scene.add( ambientLight );
+
+        // renderer.domElement.addEventListener('click', onClick, false);
+        // renderer.domElement.addEventListener( 'pointermove', onPointerMove );
+
+        // 當視窗大小改變時
+        window.addEventListener('resize', onWindowResize);
+
+        // 轨迹控制器
+        // const controls = new OrbitControls(camera, renderer.domElement);
+        // controls.target.set(0, 0, 0);
+        // controls.update();
+
+        plane();
+        cube();
+    }
+    
+      function cube(){
+        const rollOverGeo = new THREE.BoxGeometry( 50, 50, 50 );
+          rollOverMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, opacity: 0.5, transparent: true } );
+          rollOverMesh = new THREE.Mesh( rollOverGeo, rollOverMaterial );
+          scene.add( rollOverMesh );
+      }
+
+      // 鼠標經過事件
+      function onPointerMove(event) {
+          pointer.set( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1 );
+          raycaster.setFromCamera( pointer, camera );
+          const intersects = raycaster.intersectObjects( scene.children, false );
+          if ( intersects.length > 0 ) {
+              const intersect = intersects[0];
+              render();
+          }
+      }
+        
+      // 改變視窗大小需要重新調整 camera 和 renderer
+      function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+      }
+
+        // 點擊事件
+    function onClick( event ) {
+        event.preventDefault();
+        mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+        mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+        // 获取鼠标点击的3D模型
+        raycaster.setFromCamera( mouse, camera );
+        var intersects = raycaster.intersectObjects( scene.children, true );
+    
+        if ( intersects.length > 0 ) {
+             // 點擊到3D內容
+            const object = intersects[0].object;
+            console.log(object)
+        }
+    }
+
+    function render() {
+       renderer.render( scene, camera );
+
+    }
+
+
+    </script>
+  </body>
+</html>
