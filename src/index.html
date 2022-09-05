@@ -94,6 +94,10 @@
 
         raycaster = new THREE.Raycaster();//3d世界鼠標選中物體獲取器
         pointer = new THREE.Vector2();//二维向量
+                
+        // 本地坐标
+        var axes = new THREE.AxisHelper(100);//参数设置了三条轴线的长度
+        scene.add(axes);
 
         renderer.domElement.addEventListener('click', onClick, false);
         // renderer.domElement.addEventListener( 'pointermove', onPointerMove );
@@ -137,10 +141,8 @@
 
       // 方塊或者模型
       function cube(){
-        
         // 多個方塊
         // for(let i=0;i<4;i++){
-
         //   const rollOverGeo = new THREE.BoxGeometry( 50, 50, 50 );
         //   rollOverMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, opacity: 0.5, transparent: true } );
         //   rollOverMesh = new THREE.Mesh( rollOverGeo, rollOverMaterial );
@@ -152,22 +154,19 @@
 
         // 加载模型
         const loader = new GLTFLoader();
-        console.log('loader',  loader)
-        loader.load('Voxel_RabbitB.glb', gltf=> {
-                    console.log('gltf',gltf)
+        for(let i=0;i<4;i++){
+           loader.load('Voxel_RabbitB.glb', gltf=> {
                     // 设置模型缩放比例
                     gltf.scene.scale.set(600,600,600);
-                    gltf.scene.position.set(positions[0].x,positions[0].y,positions[0].z)
-    
+                    gltf.scene.position.set(positions[i].x,0,positions[i].z)
                     // 为了让模型加载为合适的姿势
-                    gltf.scene.rotation.y =  Math.PI; 
-                    
+                    gltf.scene.rotation.x= 0.5* Math.PI; 
                     // 操作模型对象
                     gltf.scene.traverse(child=>{
                         //模型看向中心
                         child.lookAt(camera.position)
                         // console.log("加載模型",`cube${value}`)
-                        child.name=`cube`// 根据名字进行删除
+                        child.name=`cube${i}`// 根据名字进行删除
                         if(child.type === "Group") {
                           rollOverMeshs.push(child);
                         }
@@ -175,6 +174,7 @@
                    scene.add(gltf.scene);
                    render();
             });
+          }
       }
 
       // 鼠標經過事件
