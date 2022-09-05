@@ -159,14 +159,14 @@
                     // 设置模型缩放比例
                     gltf.scene.scale.set(600,600,600);
                     gltf.scene.position.set(positions[i].x,0,positions[i].z)
-                    // 为了让模型加载为合适的姿势
-                    gltf.scene.rotation.x= 0.5* Math.PI; 
+                    gltf.scene.rotation.y= -0.5 * Math.PI; //将模型摆正
+                  
                     // 操作模型对象
                     gltf.scene.traverse(child=>{
-                        //模型看向中心
-                        child.lookAt(camera.position)
                         // console.log("加載模型",`cube${value}`)
                         child.name=`cube${i}`// 根据名字进行删除
+                        //模型看向中心
+                        child.lookAt(camera.position) 
                         if(child.type === "Group") {
                           rollOverMeshs.push(child);
                         }
