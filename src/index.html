@@ -40,6 +40,8 @@
       import * as THREE from "./build/three.module.js";
       import { OrbitControls } from "./js/controls/OrbitControls.js";
       import { DeviceOrientationControls } from "./js/controls/DeviceOrientationControls.js";
+      import { GLTFLoader } from "./js/loaders/GLTFLoader";
+
       let camera, scene, renderer;
       let raycaster,pointer,controls;
       const mouse = new THREE.Vector2();
@@ -71,7 +73,7 @@
 
         camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 100000 );
 				// camera.position.set( 100, 800, 100 );
-        camera.position.set( 0, 800, 0 );
+        camera.position.set( 0, 1200, 0 );
 				camera.lookAt( 0, 0, 0 );
 
         scene = new THREE.Scene();//创建一个新场景
@@ -100,12 +102,12 @@
         window.addEventListener('resize', onWindowResize);
 
        // 陀螺仪控制器
-        controls = new DeviceOrientationControls(camera);
-        controls.connect();
+        // controls = new DeviceOrientationControls(camera);
+        // controls.connect();
 
         // 轨迹控制器
-        // controls = new OrbitControls(camera, renderer.domElement);
-        // controls.target.set(0, 0, 0);
+        controls = new OrbitControls(camera, renderer.domElement);
+        controls.target.set(0, 0, 0);
 
         // grid
 				const gridHelper = new THREE.GridHelper( 1000, 25 );
@@ -135,16 +137,44 @@
 
       // 方塊或者模型
       function cube(){
+        
         // 多個方塊
-        for(let i=0;i<4;i++){
-          const rollOverGeo = new THREE.BoxGeometry( 50, 50, 50 );
-          rollOverMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, opacity: 0.5, transparent: true } );
-          rollOverMesh = new THREE.Mesh( rollOverGeo, rollOverMaterial );
-          rollOverMesh.position.set(positions[i].x,positions[i].y,positions[i].z)
-          rollOverMesh.name=`cube${i}`
-          rollOverMeshs.push(rollOverMesh);
-          scene.add( rollOverMesh );
-        }
+        // for(let i=0;i<4;i++){
+
+        //   const rollOverGeo = new THREE.BoxGeometry( 50, 50, 50 );
+        //   rollOverMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, opacity: 0.5, transparent: true } );
+        //   rollOverMesh = new THREE.Mesh( rollOverGeo, rollOverMaterial );
+        //   rollOverMesh.position.set(positions[i].x,positions[i].y,positions[i].z)
+        //   rollOverMesh.name=`cube${i}`
+        //   rollOverMeshs.push(rollOverMesh);
+        //   scene.add( rollOverMesh );
+        // }
+
+        // 加载模型
+        const loader = new GLTFLoader();
+        console.log('loader',  loader)
+        loader.load('Voxel_RabbitB.glb', gltf=> {
+                    console.log('gltf',gltf)
+                    // 设置模型缩放比例
+                    gltf.scene.scale.set(600,600,600);
+                    gltf.scene.position.set(positions[0].x,positions[0].y,positions[0].z)
+    
+                    // 为了让模型加载为合适的姿势
+                    gltf.scene.rotation.y =  Math.PI; 
+                    
+                    // 操作模型对象
+                    gltf.scene.traverse(child=>{
+                        //模型看向中心
+                        child.lookAt(camera.position)
+                        // console.log("加載模型",`cube${value}`)
+                        child.name=`cube`// 根据名字进行删除
+                        if(child.type === "Group") {
+                          rollOverMeshs.push(child);
+                        }
+                    });
+                   scene.add(gltf.scene);
+                   render();
+            });
       }
 
       // 鼠標經過事件
